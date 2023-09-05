@@ -1,3 +1,5 @@
+use postgres::{Client, NoTls};
+
 fn main() {
-    println!("Hello, world!");
+    const _CON_STR: &str = "host=localhost user=postgres password=abacaxi";
 }
