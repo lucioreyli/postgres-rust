@@ -1,28 +1,17 @@
-use openssl::ssl::{SslConnector, SslMethod};
 use postgres::Client;
-use postgres_openssl::MakeTlsConnector;
 
-const CON_STR: &str = "postgres://postgres:abacaxi@localhost:5432/postgres";
+mod create_connection;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let builder = SslConnector::builder(SslMethod::tls())?;
-    let connector = MakeTlsConnector::new(builder.build());
-    let mut client = Client::connect(CON_STR, connector)?;
+fn main() -> Result<String, String> {
+    let result_client = create_connection::create_connection();
+    let mut client: Client;
+    match result_client {
+        Ok(value) => {
+            client = value;
+            return Ok("".into());
+        }
+        Err(e) => Err("deu ruimkk".into()),
+    };
 
-    let result = client.query(
-        "
-SELECT tablename FROM pg_tables WHERE schemaname = 'public';
-        ",
-        &[],
-    )?;
-
-    for row in result {
-        let name: &str = row.get(0);
-
-        println!("{}", name);
-    }
-
-    let _ = client.close();
-
-    Ok(())
+    Ok("hehe".into())
 }
