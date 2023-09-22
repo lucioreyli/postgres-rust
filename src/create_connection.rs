@@ -4,15 +4,20 @@ use openssl::ssl::{SslConnector, SslMethod};
 use postgres::{Client, NoTls};
 use postgres_openssl::MakeTlsConnector;
 
-const CON_STR: &str = "postgres://postgres:abacaxi@localhost:5432/postgres";
+pub struct CreateConnection {
+    pub conn_str: String,
+    pub is_ssl: bool,
+}
 
-pub fn create_connection() -> Result<Client, Box<dyn Error>> {
-    let builder = match SslConnector::builder(SslMethod::tls()) {
-        Err(e) => panic!("{:?}", e),
-        Ok(_builder) => _builder,
+pub fn create_connection(config: CreateConnection) -> Result<Client, Box<dyn Error>> {
+    let client = match config.is_ssl {
+        true => {
+            let builder = SslConnector::builder(SslMethod::tls())?;
+            let _connector = MakeTlsConnector::new(builder.build());
+            Client::connect(&config.conn_str, NoTls)?
+        }
+        false => Client::connect(&config.conn_str, NoTls)?,
     };
-    let _connector = MakeTlsConnector::new(builder.build());
-    let client = Client::connect(CON_STR, NoTls)?;
 
-    return Ok(client);
+    Ok(client)
 }
